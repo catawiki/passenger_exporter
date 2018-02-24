@@ -160,7 +160,10 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(e.toplevelQueue, prometheus.GaugeValue, parseFloat(info.TopLevelRequestsInQueue))
 	ch <- prometheus.MustNewConstMetric(e.maxProcessCount, prometheus.GaugeValue, parseFloat(info.MaxProcessCount))
 	ch <- prometheus.MustNewConstMetric(e.currentProcessCount, prometheus.GaugeValue, parseFloat(info.CurrentProcessCount))
-	ch <- prometheus.MustNewConstMetric(e.appCount, prometheus.GaugeValue, parseFloat(info.AppCount))
+
+	if info.AppCount != "" {
+		ch <- prometheus.MustNewConstMetric(e.appCount, prometheus.GaugeValue, parseFloat(info.AppCount))
+	}
 
 	for _, sg := range info.SuperGroups {
 		resistingDeploymentError := 0.0
