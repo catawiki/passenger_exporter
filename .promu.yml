@@ -1,9 +1,9 @@
 go: 1.6.2
 repository:
-    path: github.com/stuartnelson3/passenger_exporter_nginx
+    path: github.com/stuartnelson3/passenger_exporter
 build:
     binaries:
-        - name: passenger_exporter_nginx
+        - name: passenger_exporter
     flags: -a -tags -installsuffix
     ldflags: |
         -X {{repoPath}}/vendor/github.com/prometheus/common/version.Version={{.Version}}

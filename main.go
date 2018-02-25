@@ -52,6 +52,7 @@ type Exporter struct {
 	appCount            *prometheus.Desc
 
 	// App metrics.
+	resistingDeploymentError *prometheus.Desc
 	appQueue         *prometheus.Desc
 	appProcsSpawning *prometheus.Desc
 
@@ -104,6 +105,12 @@ func NewExporter(cmd string, timeout time.Duration) *Exporter {
 			nil,
 			nil,
 		),
+		resistingDeploymentError: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "", "resisting_deployment_error"),
+			"Passenger is in Resisting deployment error mode.",
+			[]string{"name"},
+			nil,
+		),
 		appQueue: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "app_queue"),
 			"Number of requests in app process queues.",
@@ -153,9 +160,17 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(e.toplevelQueue, prometheus.GaugeValue, parseFloat(info.TopLevelRequestsInQueue))
 	ch <- prometheus.MustNewConstMetric(e.maxProcessCount, prometheus.GaugeValue, parseFloat(info.MaxProcessCount))
 	ch <- prometheus.MustNewConstMetric(e.currentProcessCount, prometheus.GaugeValue, parseFloat(info.CurrentProcessCount))
-	ch <- prometheus.MustNewConstMetric(e.appCount, prometheus.GaugeValue, parseFloat(info.AppCount))
+
+	if info.AppCount != "" {
+		ch <- prometheus.MustNewConstMetric(e.appCount, prometheus.GaugeValue, parseFloat(info.AppCount))
+	}
 
 	for _, sg := range info.SuperGroups {
+		resistingDeploymentError := 0.0
+		if sg.Group.ResistingDeploymentError != nil {
+			resistingDeploymentError = 1.0
+		}
+		ch <- prometheus.MustNewConstMetric(e.resistingDeploymentError, prometheus.GaugeValue, resistingDeploymentError, sg.Name)
 		ch <- prometheus.MustNewConstMetric(e.appQueue, prometheus.GaugeValue, parseFloat(sg.RequestsInQueue), sg.Name)
 		ch <- prometheus.MustNewConstMetric(e.appProcsSpawning, prometheus.GaugeValue, parseFloat(sg.Group.ProcessesSpawning), sg.Name)
 
@@ -333,7 +348,7 @@ func main() {
 
 	http.Handle(*metricsPath, prometheus.Handler())
 
-	log.Infoln("starting passenger_exporter_nginx", version.Info())
+	log.Infoln("starting passenger_exporter", version.Info())
 	log.Infoln("build context", version.BuildContext())
 	log.Infoln("listening on", *listenAddress)
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))

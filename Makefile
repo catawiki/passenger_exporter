@@ -1,6 +1,6 @@
 VERSION   := $(shell cat VERSION)
-BIN       := passenger_exporter_nginx
-CONTAINER := passenger_exporter_nginx
+BIN       := passenger_exporter
+CONTAINER := passenger_exporter
 GOOS      ?= linux
 GOARCH    ?= amd64
 
@@ -10,10 +10,14 @@ DST       ?= http://ent.int.s-cloud.net/iss/$(BIN)
 
 PREFIX    ?= $(shell pwd)
 
+GO           := GO15VENDOREXPERIMENT=1 go
+FIRST_GOPATH := $(firstword $(subst :, ,$(shell $(GO) env GOPATH)))
+PROMU        := $(FIRST_GOPATH)/bin/promu
+
 default: $(BIN)
 
 $(BIN):
-	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) promu build --prefix $(PREFIX)
+	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) $(PROMU) build --prefix $(PREFIX)
 
 release: $(TAR)
 	curl -XPOST --data-binary @$< $(DST)/$<

@@ -31,6 +31,7 @@
         <uid>5001</uid>
         <group>daemon</group>
         <gid>1</gid>
+        <resisting_deployment_error/>
         <options>
           <app_root>/src/app/my_app</app_root>
           <app_group_name>/srv/app/my_app &#40;production&#41;</app_group_name>

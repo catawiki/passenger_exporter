@@ -1,6 +1,6 @@
-************************
-passenger_exporter_nginx
-------------------------
+******************
+passenger_exporter
+------------------
 
 This is a Prometheus exporter for passenger with nginx integration.
 
@@ -20,7 +20,7 @@ make build-docker
 Running the Exporter
 --------------------
 
-Usage of passenger_exporter_nginx:
+Usage of passenger_exporter:
   -log.format value
       If set use a syslog logger or JSON logging.
       Example: logger:syslog?appname=bob&local=7 or logger:stdout?json=true.
@@ -43,7 +43,7 @@ Usage of passenger_exporter_nginx:
 To run the Docker image:
 
 docker run -p 9106:9106 -v $PATH_TO_PASSENGER_STATUS:/bin \
-        passenger_exporter_nginx:latest /passenger_exporter_nginx
+        passenger_exporter:latest /passenger_exporter
 
 Notes for running the Docker container:
 
